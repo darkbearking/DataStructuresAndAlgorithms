@@ -1,0 +1,4 @@
+排序相關
+
+linearSort	：线性排序
+compareSort	：比較排序
