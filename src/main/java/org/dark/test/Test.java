@@ -1,4 +1,4 @@
-package com.troila.test;
+package org.dark.test;
 
 public class Test {
 

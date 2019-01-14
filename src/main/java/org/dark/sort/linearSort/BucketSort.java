@@ -1,4 +1,4 @@
-package com.troila.sort.linearSort;
+package org.dark.sort.linearSort;
 
 import java.util.ArrayList;
 import java.util.HashMap;
