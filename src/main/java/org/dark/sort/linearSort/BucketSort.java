@@ -34,7 +34,7 @@ public class BucketSort {
 	 * @Title		:	LinkNode
 	 * @Description:	当前类的目的，是为了给那种桶数量不充足的情况下，计算出的key产生碰撞时存储相同key的二级容器
 	 * 					与桶排序本身无关。
-	 * 					具体实现见 com.troila.dataStrutcture.linear.SingleLinkedList
+	 * 					具体实现见 org.dark.dataStrutcture.linear.SingleLinkedList
 	 * @author 		:	liwei
 	 * @date		:	2018年12月28日
 	 */
