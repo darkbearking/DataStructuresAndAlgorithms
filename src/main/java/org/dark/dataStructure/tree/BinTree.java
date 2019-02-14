@@ -227,14 +227,14 @@ public class BinTree<T extends Comparable<T>> {
 	 */
 	public boolean delete(NodeOfTree<T> treeNode, NodeOfTree<T> node){
 		boolean flag = false;
-		NodeOfTree<T> tmp = null;
+		NodeOfTree<T> tmp = null, parent = null;
 		
 		if(null != treeNode) {
 			if(treeNode.getData().compareTo(node.getData()) < 0) {
-				delete(treeNode.getLeft(), node);
+				delete(treeNode.getRight(), node);
 			}
 			else if(treeNode.getData().compareTo(node.getData()) > 0) {
-				delete(treeNode.getRight(), node);
+				delete(treeNode.getLeft(), node);
 			}
 			//上面兩個是在找目標節點，這裡表示已經找到，要準備刪了。
 			else if(treeNode.getData().compareTo(node.getData()) == 0) {
@@ -286,6 +286,14 @@ public class BinTree<T extends Comparable<T>> {
 						treeNode.setLeft(null);
 						treeNode.setRight(null);
 					}
+				}
+				else if (!treeNode.hasLeft() && !treeNode.hasRight()) {
+					parent = treeNode.getParent();
+					if(treeNode.equals(parent.getLeft()))
+						parent.setLeft(null);
+					else if(treeNode.equals(parent.getRight()))
+						parent.setRight(null);
+					treeNode.setParent(null);
 				}
 				
 				flag = true;

@@ -54,11 +54,12 @@ public class AVLTree<T extends Comparable<T>> {
 	
 	/**
 	 * @Description：	從目標節點向上，逐級判斷父節點是否平衡並旋轉
+	 * 					不能少了目標節點！（大不了多校驗一層）
 	 * 					
 	 * @param		：	treeNode
 	 */
 	public void judgeParentsBalance(NodeOfTree<T> treeNode) {
-		NodeOfTree<T> node = treeNode.getParent();
+		NodeOfTree<T> node = treeNode;
 		while(null != node) {
 			rotateType(node);
 			node = node.getParent();
@@ -87,23 +88,27 @@ public class AVLTree<T extends Comparable<T>> {
 				depthDifference = getDepthDifference(treeNode.getLeft());
 				if(depthDifference < 0) {
 					//通知改變左子節點
-					NodeOfTree<T> left = rotateLeft(treeNode.getLeft());
-					treeNode.setLeft(left);
+//					NodeOfTree<T> left = rotateLeft(treeNode.getLeft());
+//					treeNode.setLeft(left);
+					rotateLeft(treeNode.getLeft());
 				}
 				//通知父節點，你的左子節點已改變
-				NodeOfTree<T> parent = treeNode.getParent();
-				parent.setLeft(rotateRight(treeNode));
+//				NodeOfTree<T> parent = treeNode.getParent();
+//				parent.setLeft(rotateRight(treeNode));
+				rotateRight(treeNode);
 			}
 			else if(depthDifference <= -2) {
 				depthDifference = getDepthDifference(treeNode.getRight());
 				if(depthDifference > 0) {
 					//通知改變右子節點
-					NodeOfTree<T> right = rotateRight(treeNode.getRight());
-					treeNode.setRight(right);
+//					NodeOfTree<T> right = rotateRight(treeNode.getRight());
+//					treeNode.setRight(right);
+					rotateRight(treeNode);
 				}
 				//通知父節點，你的左子節點已改變
-				NodeOfTree<T> parent = treeNode.getParent();
-				parent.setRight(rotateLeft(treeNode));
+//				NodeOfTree<T> parent = treeNode.getParent();
+//				parent.setRight(rotateLeft(treeNode));
+				rotateLeft(treeNode);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -178,17 +183,30 @@ public class AVLTree<T extends Comparable<T>> {
 	 * 					旋轉後，L變為M'，M變為L的R'，R變為M的L'
 	 * 					而這三個特征節點的子樹則完全不受影響，打醬油即可。
 	 * 					圖示說明見“rotateRight.png”，“rotateRight_.png”以及“rotateLeftRight.png”
+	 * 					
+	 * 					旋轉前傳入的節點是父節點的角色，但它在旋轉後已變為左子節點
+	 * 					因此最後需要修改節點M的父節點的左子節點
+	 * 						
 	 * @param		：	treeNode
 	 * @return		：	NodeOfTree			旋轉前傳入的節點是父節點的角色，但它在旋轉後已變為左子節點
 	 * 										因此，旋轉後需要將傳入節點的父節點作為父節點的角色返回
 	 */
-	public NodeOfTree<T> rotateRight(NodeOfTree<T> treeNode) {
-		NodeOfTree<T> nodeLeft, nodeSonRight;
+//	public NodeOfTree<T> rotateRight(NodeOfTree<T> treeNode) {
+	public void rotateRight(NodeOfTree<T> treeNode) {
+		NodeOfTree<T> nodeLeft, nodeSonRight, parent;
+		boolean ifLeftNode = false, ifRightNode = false;
 		
 		try {
 			//建立兩個指向當前節點的左子節點與左子節點的右子節點的指針
 			nodeLeft = treeNode.getLeft();
 			nodeSonRight = treeNode.getLeft().getRight();
+			parent = treeNode.getParent();
+			
+			//需要獲知當前節點屬於其父節點的哪一個子節點。以便後續嫁接時使用
+			if(treeNode.equals(parent.getLeft()))
+				ifLeftNode = true;
+			else if(treeNode.equals(parent.getRight()))
+				ifRightNode = true;
 			
 			//這孫子可能會是空，需做特殊處理
 			if(null != nodeSonRight)
@@ -198,28 +216,42 @@ public class AVLTree<T extends Comparable<T>> {
 			nodeLeft.setParent(treeNode.getParent());
 			nodeLeft.setRight(treeNode);
 			treeNode.setParent(nodeLeft);
+			
+			if(ifLeftNode)
+				parent.setLeft(nodeLeft);
+			else if(ifRightNode)
+				parent.setRight(nodeLeft);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		return treeNode.getParent();
+//		return treeNode.getParent();
 	}
 	
 	/**
 	 * @Description：	對某個節點M進行左旋（將其右子節點升級為父節點的一系列操作）
-	 * 
+	 * 					最後需要修改節點M的父節點的右子節點
 	 * 					圖示參照右旋相關內容
 	 * @param		：	treeNode
 	 * @return		：	NodeOfTree			旋轉前傳入的節點是父節點的角色，但它在旋轉後已變為左子節點
 	 * 										因此，旋轉後需要將傳入節點的父節點作為父節點的角色返回
 	 */
-	public NodeOfTree<T> rotateLeft(NodeOfTree<T> treeNode) {
-		NodeOfTree<T> nodeRight, nodeSonLeft;
+//	public NodeOfTree<T> rotateLeft(NodeOfTree<T> treeNode) {
+	public void rotateLeft(NodeOfTree<T> treeNode) {
+		NodeOfTree<T> nodeRight, nodeSonLeft, parent;
+		boolean ifLeftNode = false, ifRightNode = false;
 		
 		try {
-			//建立兩個指向當前節點的右子節點與右子節點的左子節點的指針
+			//建立三個指向當前節點的右子節點、右子節點的左子節點以及父節點的指針
 			nodeRight = treeNode.getRight();
 			nodeSonLeft = treeNode.getRight().getLeft();
+			parent = treeNode.getParent();
+			
+			//需要獲知當前節點屬於其父節點的哪一個子節點。以便後續嫁接時使用
+			if(treeNode.equals(parent.getLeft()))
+				ifLeftNode = true;
+			else if(treeNode.equals(parent.getRight()))
+				ifRightNode = true;
 			
 			//這孫子可能會是空，需做特殊處理
 			if(null != nodeSonLeft)
@@ -229,11 +261,16 @@ public class AVLTree<T extends Comparable<T>> {
 			nodeRight.setParent(treeNode.getParent());
 			nodeRight.setLeft(treeNode);
 			treeNode.setParent(nodeRight);
+			
+			if(ifLeftNode)
+				parent.setLeft(nodeRight);
+			else if(ifRightNode)
+				parent.setRight(nodeRight);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		
-		return treeNode.getParent();
+//		return treeNode.getParent();
 	}
 	
 	/**
@@ -423,22 +460,18 @@ public class AVLTree<T extends Comparable<T>> {
 	 */
 	public boolean delete(NodeOfTree<T> treeNode, NodeOfTree<T> node){
 		boolean flag = false;
-		NodeOfTree<T> tmp = null;
+		//準備一個替換待刪除節點的節點
+		NodeOfTree<T> tmp = null ,parent = null;
 		
 		if(null != treeNode) {
 			if(treeNode.getData().compareTo(node.getData()) < 0) {
-				delete(treeNode.getLeft(), node);
-			}
-			else if(treeNode.getData().compareTo(node.getData()) > 0) {
 				delete(treeNode.getRight(), node);
 			}
-			//上面兩個是在找目標節點，這裡表示已經找到，要準備刪了。
+			else if(treeNode.getData().compareTo(node.getData()) > 0) {
+				delete(treeNode.getLeft(), node);
+			}
+			//上面兩個是以遞歸的方式在找目標節點，這裡表示已經找到，要準備刪了。
 			else if(treeNode.getData().compareTo(node.getData()) == 0) {
-//				//當前節點是不為空的根節點，同時要刪除的目標節點即根節點，則將根節點置為空即可。
-				//發現如果是根節點，下面這三行代碼完全不夠看，因此將代碼合並到當前節點有雙子節點中去了。
-//				if(null == treeNode.getParent()) {
-//					this.root = null;
-//				}
 				if(treeNode.hasLeft() && !treeNode.hasRight()) {
 					tmp = treeNode.getLeft();
 					tmp.setParent(treeNode.getParent());
@@ -453,7 +486,7 @@ public class AVLTree<T extends Comparable<T>> {
 				}
 				else if(treeNode.hasRight() && treeNode.hasLeft()) {
 					//方法一：	如果當前節點不是根節點，且其父節點缺少一個子樹的話，那麼可以讓當前節點的所有節點直接掛在父節點上
-					//			同時，既然執行到這裡，說明當前節點至少是根節點的一級子節點，那也無非是讓其子樹掛在根節點上而已
+					//			若其父節點是根節點也無影響，說明當前節點至少是根節點的一級子節點，那也無非是讓其子樹掛在根節點上而已
 					if(null != treeNode.getParent() && (!treeNode.getParent().hasLeft() || !treeNode.getParent().hasRight())) {
 						tmp = treeNode.getParent();
 						tmp.setLeft(treeNode.getLeft());
@@ -483,8 +516,25 @@ public class AVLTree<T extends Comparable<T>> {
 						treeNode.setRight(null);
 					}
 				}
-				
+				else if (!treeNode.hasLeft() && !treeNode.hasRight()) {
+					parent = treeNode.getParent();
+					if(treeNode.equals(parent.getLeft()))
+						parent.setLeft(null);
+					else if(treeNode.equals(parent.getRight()))
+						parent.setRight(null);
+					treeNode.setParent(null);
+				}
+
 				flag = true;
+				//刪除後，以新的節點作為出發點，向上逐級遍歷所有直系親節點是否失衡。失衡則翻轉。
+				//不需要從新的節點向下判斷的理由是：無論上述的那種替換方法，都不會對新節點的子節點造成災難性的失衡
+				//因為在刪除前，當前樹一定是平衡的（深度差最多是1，所以無所謂）
+				//不能從其父節點作為起始點的原因在於，也許從當前節點開始已經失衡，跳過它會造成隱患。
+				//特例情況產生於：被刪除節點是葉子節點，那麼需要從它的父節點作為起始點向上遍歷
+				if(null != parent)
+					judgeParentsBalance(parent);
+				else
+					judgeParentsBalance(tmp);
 			}
 		}
 		
@@ -761,13 +811,6 @@ public class AVLTree<T extends Comparable<T>> {
 		bt.insert(node8);
 		bt.insert(node9);
 		
-/*		NodeOfTree<Integer>[] node = new NodeOfTree[bt.length];
-		for(int i=0; i<bt.length; i++) {
-			node[i] = new NodeOfTree<Integer>(new Random().nextInt(bt.randomRange));
-			bt.insert(node[i]);
-			System.out.println(node[i].getData());
-		}
-*/		
 		System.out.println("=========================開始前序=========================");
 		bt.preOrderTraversal(bt.getRoot());
 		System.out.println(" ");
@@ -779,7 +822,26 @@ public class AVLTree<T extends Comparable<T>> {
 		System.out.println("=========================開始後序=========================");
 		bt.postOrderTraversal(bt.getRoot());
 		
-/*	
+		bt.delete(node6);
+		
+/*		NodeOfTree<Integer>[] node = new NodeOfTree[bt.length];
+		for(int i=0; i<bt.length; i++) {
+			node[i] = new NodeOfTree<Integer>(new Random().nextInt(bt.randomRange));
+			bt.insert(node[i]);
+			System.out.println(node[i].getData());
+		}
+*/
+		System.out.println("=========================開始前序=========================");
+		bt.preOrderTraversal(bt.getRoot());
+		System.out.println(" ");
+		
+		System.out.println("=========================開始中序=========================");
+		bt.midOrderTraversal(bt.getRoot());
+		System.out.println(" ");
+		
+		System.out.println("=========================開始後序=========================");
+		bt.postOrderTraversal(bt.getRoot());
+/*
 		System.out.println("=========================開始前驅後繼=========================");
 		bt.getPrecursor(node[15]);
 		bt.getSubsequent(node[15]);
